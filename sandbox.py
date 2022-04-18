@@ -7,12 +7,10 @@ GZIP_FOLDER = "res/data/gzip-files"
 GZIP_FILE_LIST = [GZIP_FOLDER + "/" + f \
             for f in check_output(["ls", GZIP_FOLDER]).decode("utf8").split()]
 
-#list_of_dfs = [pd.read_csv(filename) for filename in GZIP_FILE_LIST]
-#for dataframe, filename in zip(list_of_dfs, GZIP_FILE_LIST)
-#    dataframe['filename'] = filename
-#combined_df = pd.concat(list_of_dfs, ignore_index=True)
+
 
 list_of_dfs = []
+list_of_ids = []
 total_size = 0
 
 for curFile in GZIP_FILE_LIST:
@@ -22,8 +20,10 @@ for curFile in GZIP_FILE_LIST:
 
     #Don't parse dates. It adds so much time and the format can be
     #Easily manipulated as a string
-    print(preLine + "\tBuilding Init DF...")
-    list_of_dfs.append(pd.read_csv(curFile, compression='gzip', header=0, sep=',', quotechar='"'))
+    print(preLine + "\tCapturing User ID Hashes...")
+    list_of_ids.append(pd.read_csv(curFile, compression='gzip', usecols=['user_id']))#.squeeze("columns"))
+    #print(preLine + "\tBuilding Init DF...")
+    #list_of_dfs.append(pd.read_csv(curFile, compression='gzip', header=0, sep=',', quotechar='"'))
 
     #print(preLine + "\tExplode Coordinates...")
     #DropNA to remove 2nd file's extra columns (one row has data there? Wonder what it is.)
@@ -51,18 +51,19 @@ for curFile in GZIP_FILE_LIST:
     #print(preLine + "\tDropping un-necessary columns...")
     #list_of_dfs[-1] = list_of_dfs[-1].drop(columns=['coordinate', 'user_id'])
 
-    total_size+=len(list_of_dfs[-1])
+    total_size+=len(list_of_ids[-1])
 
-    print(preLine + "\tRows: " + f'{len(list_of_dfs[-1]):,}')
+    print(preLine + "\tRows: " + f'{len(list_of_ids[-1]):,}')
     print(preLine + "\tTotal Size: " + f'{total_size:,}')
+    #print(pd.concat(list_of_ids, ignore_index=True).user_id.astype('category').cat.codes.value_counts())
     #print(place_data.head())
     #print(place_data.columns)
     #print(place_data.info())
 
-print("Concat-ing all DFs...")
-combined_df = pd.concat(list_of_dfs, ignore_index=True)
+print("Concat-ing all Hashes...")
+combined_df = pd.concat(list_of_ids, ignore_index=True)
 
-print("Pickling and Compressing DataFrame...")
-combined_df.to_pickle(path="res/data/dataframe.pkl.gzip", compression={'method': 'gzip', 'compresslevel': 1, 'mtime': 1})
+#print("Pickling and Compressing User ID Hashes...")
+#combined_df.to_pickle(path="res/data/user-id-hashes.pkl.gzip", compression={'method': 'gzip', 'compresslevel': 1, 'mtime': 1})
 
 print("Done!")
