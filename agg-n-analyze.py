@@ -7,6 +7,8 @@ GZIP_FOLDER = "res/data/gzip-files"
 GZIP_FILE_LIST = [GZIP_FOLDER + "/" + f for f in sorted(os.listdir(GZIP_FOLDER))]
 
 total_pixels_censored = 0
+#Moderation (when coord has 4), means there's certain areas we will want
+#the whole history, despite the cost. Starting that journey here.
 key_pixel_coords_list = []
 key_pixel_cnt = 0
 
